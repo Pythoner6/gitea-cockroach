@@ -17,11 +17,21 @@ jobs:
         registry: ghcr.io
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}}
+    - name: 'Patch gitea'
+      working-directory: gitea
+      run: |
+        git apply ../cockroach.patch
     - name: 'Build default amd64 image'
+      working-directory: gitea
       run: |
-        docker build -f gitea/Dockerfile gitea --tag ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-amd64
+        docker build . --tag ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-amd64
     - name: 'Build rootless amd64 image'
+      working-directory: gitea
       run: |
-        docker build -f gitea/Dockerfile.rootless gitea --tag ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-rootless-amd64
+        docker build -f Dockerfile.rootless . --tag ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-rootless-amd64
+    - name: 'Push images'
+      run: |
+        docker push ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-amd64
+        docker push ghcr.io/$(echo "${{github.actor}}" | tr '[:upper:]' '[:lower:]')/gitea-cockroach:latest-rootless-amd64
     #- name: 'Build default arm64 image'
     #- name: 'Build rootless arm64 image'
